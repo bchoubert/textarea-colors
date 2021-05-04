@@ -1,0 +1,9 @@
+.character {
+  display: inline;
+}
+
+.crCharacter {
+  display: block;
+  width: 0;
+  height: 1em;
+}

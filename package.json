@@ -1,0 +1,36 @@
+{
+  "name": "react-textarea-colors",
+  "version": "1.0.0",
+  "description": "A textarea component that shows background colors for each character, for React",
+  "main": "dist/index.js",
+  "author": "Bertrand Choubert",
+  "license": "MIT",
+  "repository": "https://github.com/bchoubert/textarea-colors",
+  "devDependencies": {
+    "@babel/cli": "^7.13.16",
+    "@babel/core": "^7.13.16",
+    "@babel/preset-env": "^7.13.15",
+    "@babel/preset-react": "^7.13.13",
+    "@babel/runtime": "^7.13.0",
+    "babel-plugin-transform-import-css": "^1.0.0-alpha.11",
+    "install-peers-cli": "^2.2.0",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0"
+  },
+  "scripts": {
+    "build": "babel src -d dist",
+    "build:watch": "babel --watch src -d dist",
+    "prepare": "install-peers"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0"
+  },
+  "keywords": [
+    "textarea",
+    "colors",
+    "background",
+    "input",
+    "react"
+  ]
+}
