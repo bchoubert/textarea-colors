@@ -44,7 +44,7 @@ var characterStyles = {
   crCharacter: "styles__crCharacter___3rDmF"
 };
 
-require('load-styles')("/*  imported from styles.css  */\n\n.styles__character___2r3d8 {\n  display: inline;\n}\n\n.styles__crCharacter___3rDmF {\n  display: block;\n  width: 0;\n  height: 1em;\n}");
+require('load-styles')("/*  imported from styles.css  */\n\n.styles__character___2r3d8 {\n  display: inline;\n}\n\n.styles__crCharacter___3rDmF {\n  display: block;\n}\n\n.styles__crCharacter___3rDmF + .styles__crCharacter___3rDmF {\n  height: 1em;\n}");
 
 var styles = {
   containerStyle: {
@@ -68,7 +68,12 @@ var styles = {
 
 var TextAreaCharacter = function TextAreaCharacter(_ref) {
   var c = _ref.c,
-      i = _ref.i;
+      i = _ref.i,
+      getCharacterStyle = _ref.getCharacterStyle,
+      value = _ref.value;
+  var styles = (0, _react.useMemo)(function () {
+    return (getCharacterStyle === null || getCharacterStyle === void 0 ? void 0 : getCharacterStyle(c, i, value)) || {};
+  }, [c, i, value, getCharacterStyle]);
 
   switch (c) {
     case '\r':
@@ -78,17 +83,19 @@ var TextAreaCharacter = function TextAreaCharacter(_ref) {
 
     default:
       return /*#__PURE__*/_react["default"].createElement("span", {
-        className: characterStyles.character
+        className: characterStyles.character,
+        style: styles
       }, c);
   }
 };
 
 var DEFAULT_PROPS = {
   rows: 5
-}; // ROWS, ONCHANGE, VALUE, STYLE, 
+}; // ROWS, ONCHANGE, VALUE, STYLE, GETCHARACTERSTYLE
 
 var TextAreaColors = function TextAreaColors(initialProps) {
   var inputRef = (0, _react.useRef)(null);
+  var rootRef = (0, _react.useRef)(null);
 
   var props = _objectSpread(_objectSpread({}, DEFAULT_PROPS), initialProps);
 
@@ -105,45 +112,62 @@ var TextAreaColors = function TextAreaColors(initialProps) {
     });
   });
   var giveInputFocus = (0, _react.useCallback)(function () {
-    var _inputRef$current;
+    if (!window.getSelection().toString()) {
+      var _inputRef$current;
 
-    return inputRef === null || inputRef === void 0 ? void 0 : (_inputRef$current = inputRef.current) === null || _inputRef$current === void 0 ? void 0 : _inputRef$current.focus();
+      inputRef === null || inputRef === void 0 ? void 0 : (_inputRef$current = inputRef.current) === null || _inputRef$current === void 0 ? void 0 : _inputRef$current.focus();
+    }
   }, [inputRef]);
   var onInputKeyDown = (0, _react.useCallback)(function (e) {
     var _props$onChange2, _props$onChange3;
 
-    switch (e === null || e === void 0 ? void 0 : e.keyCode) {
-      case 8:
-        // Manage backspace
-        props === null || props === void 0 ? void 0 : (_props$onChange2 = props.onChange) === null || _props$onChange2 === void 0 ? void 0 : _props$onChange2.call(props, function (v) {
-          if (!v || v.length < 1) {
-            return '';
-          }
+    console.log(e);
 
-          return _toConsumableArray(v).slice(0, -1).join('');
-        });
-        break;
+    if (e !== null && e !== void 0 && e.ctrlKey) {
+      switch (e === null || e === void 0 ? void 0 : e.keyCode) {
+        case 65: // TODO: Manage select all
 
-      case 13:
-        props === null || props === void 0 ? void 0 : (_props$onChange3 = props.onChange) === null || _props$onChange3 === void 0 ? void 0 : _props$onChange3.call(props, function (v) {
-          return [].concat(_toConsumableArray(v), ['\r']).join('');
-        });
-        break;
+      }
+    } else {
+      switch (e === null || e === void 0 ? void 0 : e.keyCode) {
+        case 8:
+          // Manage backspace
+          props === null || props === void 0 ? void 0 : (_props$onChange2 = props.onChange) === null || _props$onChange2 === void 0 ? void 0 : _props$onChange2.call(props, function (v) {
+            if (!v || v.length < 1) {
+              return '';
+            }
+
+            return _toConsumableArray(v).slice(0, -1).join('');
+          });
+          break;
+
+        case 13:
+          props === null || props === void 0 ? void 0 : (_props$onChange3 = props.onChange) === null || _props$onChange3 === void 0 ? void 0 : _props$onChange3.call(props, function (v) {
+            return [].concat(_toConsumableArray(v), ['\r']).join('');
+          });
+          break;
+      }
     }
   });
-  console.log(props.value);
+  var valueRendered = (0, _react.useMemo)(function () {
+    return (props.value || '').split('').map(function (c, i) {
+      return /*#__PURE__*/_react["default"].createElement(TextAreaCharacter, {
+        key: "".concat(c, "-").concat(i),
+        c: c,
+        i: i,
+        getCharacterStyle: props.getCharacterStyle,
+        value: props.value
+      });
+    });
+  }, [props.getCharacterStyle, props.value]);
   return /*#__PURE__*/_react["default"].createElement("div", {
     style: _objectSpread(_objectSpread(_objectSpread({}, styles.containerStyle), (props === null || props === void 0 ? void 0 : props.style) || {}), {
-      minHeight: "".concat(initialProps.rows || 5, "rem")
+      minHeight: "".concat(props.rows, "rem")
     }),
-    onClick: giveInputFocus
-  }, (props.value || '').split('').map(function (c, i) {
-    return /*#__PURE__*/_react["default"].createElement(TextAreaCharacter, {
-      key: "".concat(c, "-").concat(i),
-      c: c,
-      i: i
-    });
-  }), /*#__PURE__*/_react["default"].createElement("input", {
+    onClick: giveInputFocus,
+    role: "textbox",
+    ref: rootRef
+  }, valueRendered, /*#__PURE__*/_react["default"].createElement("input", {
     ref: inputRef,
     value: inputValue,
     onChange: onInputValueChange,
@@ -153,5 +177,6 @@ var TextAreaColors = function TextAreaColors(initialProps) {
   }));
 };
 
-var _default = TextAreaColors;
+var _default = /*#__PURE__*/(0, _react.memo)(TextAreaColors);
+
 exports["default"] = _default;

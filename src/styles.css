@@ -4,6 +4,8 @@
 
 .crCharacter {
   display: block;
-  width: 0;
+}
+
+.crCharacter + .crCharacter {
   height: 1em;
 }

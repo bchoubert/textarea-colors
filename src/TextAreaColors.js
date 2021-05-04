@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState, useMemo, memo } from 'react';
 
 import characterStyles from './styles.css';
 
@@ -22,12 +22,25 @@ const styles = {
   },
 };
 
-const TextAreaCharacter = ({ c, i }) => {
+const TextAreaCharacter = ({ c, i, getCharacterStyle, value }) => {
+  const styles = useMemo(() => {
+    return getCharacterStyle?.(c, i, value) || {};
+  }, [c, i, value, getCharacterStyle]);
+
   switch(c) {
     case '\r':
-      return (<span className={characterStyles.crCharacter} />);
+      return (
+        <span className={characterStyles.crCharacter} />
+      );
     default:
-      return (<span className={characterStyles.character}>{c}</span>);
+      return (
+        <span
+          className={characterStyles.character}
+          style={styles}
+        >
+          {c}
+        </span>
+      );
   }
 }
 
@@ -35,9 +48,10 @@ const DEFAULT_PROPS = {
   rows: 5,
 };
 
-// ROWS, ONCHANGE, VALUE, STYLE, 
+// ROWS, ONCHANGE, VALUE, STYLE, GETCHARACTERSTYLE
 const TextAreaColors = (initialProps) => {
   const inputRef = useRef(null);
+  const rootRef = useRef(null);
 
   const props = {
     ...DEFAULT_PROPS,
@@ -49,25 +63,45 @@ const TextAreaColors = (initialProps) => {
     props?.onChange?.(v => `${v}${e.target.value}`);
   });
 
-  const giveInputFocus = useCallback(() => inputRef?.current?.focus(), [inputRef]);
+  const giveInputFocus = useCallback(() => {
+    if (!window.getSelection().toString()) {
+      inputRef?.current?.focus();
+    }
+  }, [inputRef]);
   const onInputKeyDown = useCallback(e => {
-    switch(e?.keyCode) {
-      case 8:
-        // Manage backspace
-        props?.onChange?.(v => {
-          if (!v || v.length < 1) { return ''; }
-          return [...v].slice(0, -1).join('');
-        });
-        break;
-      case 13:
-        props?.onChange?.(v => {
-          return [...v, '\r'].join('');
-        });
-        break;
+    console.log(e)
+    if (e?.ctrlKey) {
+      switch(e?.keyCode) {
+        case 65:
+          // TODO: Manage select all
+      }
+    } else {
+      switch(e?.keyCode) {
+        case 8:
+          // Manage backspace
+          props?.onChange?.(v => {
+            if (!v || v.length < 1) { return ''; }
+            return [...v].slice(0, -1).join('');
+          });
+          break;
+        case 13:
+          props?.onChange?.(v => {
+            return [...v, '\r'].join('');
+          });
+          break;
+      }
     }
   });
 
-  console.log(props.value);
+  const valueRendered = useMemo(() => (props.value || '').split('').map((c, i) => (
+    <TextAreaCharacter
+      key={`${c}-${i}`}
+      c={c}
+      i={i}
+      getCharacterStyle={props.getCharacterStyle}
+      value={props.value}
+    />
+  )), [props.getCharacterStyle, props.value]);
 
   return (
     <div
@@ -75,12 +109,14 @@ const TextAreaColors = (initialProps) => {
         ...styles.containerStyle,
         ...(props?.style || {}),
         ...({
-          minHeight: `${initialProps.rows || 5}rem`
+          minHeight: `${props.rows}rem`
         })
       }}
       onClick={giveInputFocus}
+      role="textbox"
+      ref={rootRef}
     >
-      {(props.value || '').split('').map((c, i) => <TextAreaCharacter key={`${c}-${i}`} c={c} i={i} />)}
+      {valueRendered}
       <input
         ref={inputRef}
         value={inputValue}
@@ -93,4 +129,4 @@ const TextAreaColors = (initialProps) => {
   );
 };
 
-export default TextAreaColors;
+export default memo(TextAreaColors);
